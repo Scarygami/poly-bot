@@ -1,0 +1,76 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<!--
+One rule to define the poly-bot's behaviour.
+
+Can contain multiple patterns and response, defined by elements
+with `pattern` or `response` attributes respectively.
+
+If any of the patterns matches the input, one of the responses will
+be randomely selected as output.
+
+Patterns are regular expressions.
+
+Responses can contain `$n` variables
+to reference matches in the regular expression
+(using the String.prototype.replace logic).
+
+Example:
+
+    <poly-bot>
+      <poly-bot-rule>
+        <span pattern>My name is (.+)</span>
+
+        <span response>Nice to meet you, $1!</span>
+      </poly-bot-rule>
+    </poly-bot>
+
+@element poly-bot-rule
+@demo demo/index.html
+-->
+<dom-module id="poly-bot-rule">
+  <template>
+    <content></content>
+  </template>
+  <script>
+    Polymer({
+      is: 'poly-bot-rule',
+      properties: {
+        _input: String,
+        _output: {
+          type: String,
+          computed: '_computeOutput(_input)',
+          notify: true
+        }
+      },
+
+      attached: function () {
+        var patterns = Polymer.dom(this).querySelectorAll('[pattern]');
+        this._patterns = patterns.map(function (p) {
+          return new RegExp('\\b' + p.textContent + '\\b', 'gim');
+        });
+
+        var responses = Polymer.dom(this).querySelectorAll('[response]');
+        this._responses = responses.map(function (r) {
+          return r.textContent;
+        });
+      },
+
+      _computeOutput: function (input) {
+        if (!input || !this._patterns || !this._responses) {
+          return undefined;
+        }
+
+        for (var i = 0; i < this._patterns.length; i++) {
+          var match = this._patterns[i].exec(input);
+          if (match) {
+            var response = this._responses[Math.floor(Math.random() * this._responses.length)];
+            return match[0].replace(this._patterns[i], response);
+          }
+        }
+
+        return undefined;
+      }
+    });
+  </script>
+</dom-module>

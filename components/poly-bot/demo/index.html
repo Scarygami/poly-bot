@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<!--
+@license
+Copyright (c) 2015 by Gerwin Sturm
+
+Adapted from PolymerElements/seed-element:
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <title>poly-bot Eliza</title>
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="../../paper-input/paper-input.html">
+    <link rel="import" href="../../paper-button/paper-button.html">
+    <link rel="import" href="../../iron-flex-layout/classes/iron-flex-layout.html">
+
+    <link rel="import" href="../poly-bot.html">
+  </head>
+  <body unresolved>
+
+    <template is="dom-bind" id="demo">
+      <div class="layout horizontal center">
+        <paper-input value="{{input}}" class="flex" on-keypress="_handleKeypress"></paper-input>
+        <paper-button raised on-tap="_sendMessage">Send</paper-button>
+      </div>
+
+      <template is="dom-repeat" items="[[chatlog]]">
+        <span>[[item.author]]</span>: <span>[[item.text]]</span><br>
+      </template>
+
+      <poly-bot input="[[botInput]]" on-output="_botMessage">
+        <poly-bot-rule>
+          <span pattern>I remember (.+)</span>
+
+          <span response>Do you often think of $1?</span>
+          <span response>Does thinking of $1 bring anything else to mind?</span>
+          <span response>Why do you remember $1 just now?</span>
+          <span response>What in the present situation reminds you of $1?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>Do you remember (.+)</span>
+
+          <span response>Did you think I would forget $1?</span>
+          <span response>Why do you think I should recall $1 now?</span>
+          <span response>What about $1?</span>
+          <span response>You mentioned $1?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>you remember (.+)</span>
+
+          <span response>How could I forget $1?</span>
+          <span response>What about $1 should I remember?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>I forget (.+)</span>
+          <span pattern>I forgot (.+)</span>
+          <span pattern>I have forgotten (.+)</span>
+
+          <span response>Can you think of why you might forget $1?</span>
+          <span response>Why can't you remember $1?</span>
+          <span response>How often do you think of $1?</span>
+          <span response>Does it bother you to forget that?</span>
+          <span response>Could it be a mental block?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>Did you forget (.+)</span>
+
+          <span response>Why do you ask?</span>
+          <span response>Are you sure you told me?</span>
+          <span response>Would it bother you if I forgot $1?</span>
+          <span response>Why should I recall $1 just now?</span>
+          <span response>Tell me more about $1.</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>I dreamed (.+)</span>
+
+          <span response>Really, $1?</span>
+          <span response>Have you ever fantasized $1 while you were awake?</span>
+          <span response>Have you ever dreamed $1 before?</span>
+          <span response>What does that dream suggest to you?</span>
+          <span response>Do you dream often?</span>
+          <span response>What persons appear in your dreams?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>my (mom|dad|sister|sis|brother|mother|father|bro|cousin|aunt|uncle) (.+)</span>
+
+          <span response>Tell me more about your family.</span>
+          <span response>Who else in your family $2?</span>
+          <span response>Your $1?</span>
+          <span response>What else comes to mind when you think of your $1?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>computer</span>
+
+          <span response>Do computers worry you?</span>
+          <span response>Why do you mention computers?</span>
+          <span response>What do you think machines have to do with your problem?</span>
+          <span response>Don't you think computers can help people?</span>
+          <span response>What about machines worries you?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>(i am|i'm) (angry|pissed|depressed|sad|unhappy|mad)</span>
+
+          <span response>I am sorry to hear that you are $2.</span>
+          <span response>Do you think coming here will help you not to be $2?</span>
+          <span response>I'm sure it's not pleasant to be $2.</span>
+          <span response>Can you explain what made you $2?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>(i am|i'm) (happy|excited|glad)</span>
+
+          <span response>How have I helped you to be $2?</span>
+          <span response>Has your treatment made you $2?</span>
+          <span response>What makes you $2 just now?</span>
+          <span response>Can you explain why you are $2?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>i (can't|cannot|can not) (.+)</span>
+
+          <span response>How do you know that you can't $2?</span>
+          <span response>Have you tried?</span>
+          <span response>Why is that?</span>
+          <span response>Perhaps you could $2 now.</span>
+          <span response>Do you really want to be able to $2?</span>
+          <span response>What if you could $2?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>i (don't|do not) (.+)</span>
+
+          <span response>Don't you really $2?</span>
+          <span response>Why don't you $2?</span>
+          <span response>Do you wish to be able to $2?</span>
+          <span response>Does that trouble you?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>i feel (.*)</span>
+
+          <span response>Tell me more about such feelings.</span>
+          <span response>Do you often feel $1?</span>
+          <span response>Do you enjoy feeling $1.</span>
+          <span response>Of what does feeling $1 remind you?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>i ([^\s]+) you</span>
+
+          <span response>Perhaps in your fantasies we $1 each other.</span>
+          <span response>Do you wish to $1 me?</span>
+          <span response>You seem to need to $1 me.</span>
+          <span response>Do you $1 anyone else?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>you ([^\s]+) me</span>
+
+          <span response>You like to think I $1 you, don't you?</span>
+          <span response>What makes you think I $1 you?</span>
+          <span response>Really, I $1 you?</span>
+          <span response>Do you wish to believe I $1 you?</span>
+          <span response>Suppose I did $1 you, what would that mean to you?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>why (do you not|don't you) (.+)</span>
+
+          <span response>Do you believe I don't $2?</span>
+          <span response>Perhaps I will $2 in good time.</span>
+          <span response>Should you $2 yourself?</span>
+          <span response>You want me to $2?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>why (can't I|can I not) (.+)</span>
+
+          <span response>Do you think you should be able to $2?</span>
+          <span response>Do you want to be able to $2?</span>
+          <span response>Do you believe this will help you to $2?</span>
+          <span response>Do you have any idea why you can't $2?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>i am (.*)</span>
+
+          <span response>Is it because you are $1 that you came to me?</span>
+          <span response>How long have you been $1?</span>
+          <span response>Do you believe it is normal to be $1.</span>
+          <span response>Do you enjoy being $1?</span>
+          <span response>Do you know anyone else who is $1?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>i (desire|need|want) (.*)</span>
+
+          <span response>What would it mean to you if you got $2?</span>
+          <span response>Why do you want $2?</span>
+          <span response>Suppose you got $2 soon.</span>
+          <span response>What if you never got $2?</span>
+          <span response>What would getting $2 mean to you?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>i (believe|think)</span>
+
+          <span response>Do you really think so?</span>
+          <span response>But you are not sure.</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>am I (.+)</span>
+
+          <span response>Do you believe you are $1?</span>
+          <span response>Would you want to be $1?</span>
+          <span response>Do you wish I would tell you, you are $1?</span>
+          <span response>What would it mean if you were $1?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>was I (.+)</span>
+
+          <span response>What if you were $1?</span>
+          <span response>Do you think you were $1?</span>
+          <span response>Were you $1?</span>
+          <span response>What would it mean if you were $1?</span>
+          <span response>What does "$1" suggesto to you?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>I was (.+)</span>
+
+          <span response>Were you really?</span>
+          <span response>Why do you tell me you were $1 now?</span>
+          <span response>Perhaps I already know you were $1.</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>are you (.+)</span>
+
+          <span response>Are you interested in whether I am $1 or not?</span>
+          <span response>Would you prefer if I weren't $1?</span>
+          <span response>Perhaps I am $1 in your fantasies.</span>
+          <span response>Do you sometimes think I am $1?</span>
+          <span response>Would it matter to you?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>can you (.+)</span>
+
+          <span response>You believe I can $1, don't you?</span>
+          <span response>You want me to be able to $1.</span>
+          <span response>Perhaps you would like to be able to $1 yourself.</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>can i (.+)</span>
+
+          <span response>Whether or not you can $1 depends on you more than on me.</span>
+          <span response>Do you want to be able to $1?</span>
+          <span response>Perhaps you don't want to $1.</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>were you (.+)</span>
+
+          <span response>Would you like to believe I was $1?</span>
+          <span response>What suggests that I was $1?</span>
+          <span response>What do you think?</span>
+          <span response>Perhapy I was $1?</span>
+          <span response>What if I had been $1?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>you are (.+)</span>
+
+          <span response>What makes you think I am $1?</span>
+          <span response>Does it please you to believe I am $1?</span>
+          <span response>Do you sometimes wish you were $1?</span>
+          <span response>Perhaps you would like to be $1?</span>
+          <span response>Would it matter to you?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>different</span>
+
+          <span response>How is it different?</span>
+          <span response>What differences do you see?</span>
+          <span response>What does that difference suggest to you?</span>
+          <span response>What other distinctions do you see?</span>
+          <span response>What do you suppose that disparity means?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>everyone</span>
+
+          <span response>Really, everyone?</span>
+          <span response>Surely not everyone.</span>
+          <span response>Can you think of anyone in particular?</span>
+          <span response>Who, for example?</span>
+          <span response>Are you thinking of a very special person?</span>
+          <span response>Who, may I ask?</span>
+          <span response>Someone special perhaps?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>no one (.+)</span>
+          <span pattern>nobody (.+)</span>
+
+          <span response>Are you sure, no one $1?</span>
+          <span response>Surely someone $1.</span>
+          <span response>Can you think of anyone at all?</span>
+          <span response>Are you thinking of a very special person?</span>
+          <span response>Who, may I ask?</span>
+          <span response>You have a particular person in mind, don't you?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>(.+) are (.+)</span>
+
+          <span response>Did you think they might not be $2?</span>
+          <span response>Would you like it if they were not $2?</span>
+          <span response>What if they were not $2?</span>
+          <span response>Are they always $2?</span>
+          <span response>Are you positive they are $2?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>your (.+)</span>
+
+          <span response>Why are you concerned over my $1?</span>
+          <span response>What about your own $1?</span>
+          <span response>Are you worried about someone else's $1?</span>
+          <span response>Really, my $1?</span>
+          <span response>What makes you think of my $1?</span>
+          <span response>Do you want my my $1?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>if (.+)</span>
+
+          <span response>Do you think it's likely that $1?</span>
+          <span response>Do you wish that $1?</span>
+          <span response>Really, if $1?</span>
+          <span response>What would you do if $1?</span>
+          <span response>But what are the chances that $1?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>perhaps</span>
+
+          <span response>You don't seem quite certain.</span>
+          <span response>Why the uncertain tone?</span>
+          <span response>Can't you be more positive?</span>
+          <span response>You aren't sure?</span>
+          <span response>Don't you know?</span>
+          <span response>How likely, would you estimate?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>what</span>
+          <span pattern>who</span>
+          <span pattern>when</span>
+          <span pattern>where</span>
+          <span pattern>how<span>
+          <span pattern>why<span>
+
+          <span response>Why do you ask?</span>
+          <span response>Does that question interest you?</span>
+          <span response>What is it you really want to know?</span>
+          <span response>Are such questions much on your mind?</span>
+          <span response>What answer would please you most?</span>
+          <span response>What do you think?</span>
+          <span response>What comes to mind?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>hello</span>
+          <span pattern>hi</span>
+          <span pattern>howdy</span>
+          <span pattern>hola</span>
+          <span pattern>hai</span>
+          <span pattern>yo</span>
+          <span pattern>hey</span>
+
+          <span response>How do you do. Please state your problem.</span>
+          <span response>Hi. What seems to be your problem?</span>
+          <span response>Please tell me what's been bothering you.</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>bye</span>
+          <span pattern>goodbye</span>
+
+          <span response>Goodbye. It was nice talking to you.</span>
+          <span response>Goodbye. This was really a nice talk.</span>
+          <span response>Goodbye. I'm looking forward to our next session.</span>
+          <span response>This was a good session, wasn't it? But time is over now. Goodbye.</span>
+          <span response>Maybe we could discuss this moreover in our next session? Goodbye.</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>you (.+)</span>
+
+          <span response>We were discussing you, not me.</span>
+          <span response>Oh, I $1?</span>
+          <span response>You're not really talking about me, are you?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>it bothers me</span>
+
+          <span response>Why do you think it bothers you?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>me neither</span>
+
+          <span response>Let's continue exploring this issue.</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>sorry</span>
+          <span pattern>apology</span>
+          <span pattern>apologize</span>
+
+          <span response>Please don't apologize.</span>
+          <span response>Apologies are not necessary.</span>
+          <span response>It did not bother me. Please continue.</span>
+          <span response>What about $1 should I remember?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>because</span>
+
+          <span response>Is that the real reason?</span>
+          <span response>Don't any other reasons come to mind?</span>
+          <span response>Does that reason seem to explain anything else?</span>
+          <span response>What other reasons might there be?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>you</span>
+
+          <span response>We were discussing you, not me.</span>
+          <span response>You're not really talking about me, are you?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>yes</span>
+          <span pattern>yeah</span>
+          <span pattern>yep</span>
+          <span pattern>yup</span>
+
+          <span response>Please go on.</span>
+          <span response>Please tell me more about this.</span>
+          <span response>Why don't you tell me a little more about this.</span>
+          <span response>I see.</span>
+          <span response>I understand</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>no</span>
+          <span pattern>nah</span>
+          <span pattern>nope</span>
+
+          <span response>Are you saying no just to be negative?</span>
+          <span response>Does this make you feel unhappy?</span>
+          <span response>Why not?</span>
+          <span response>I see.</span>
+          <span response>Why 'no'?</span>
+        </poly-bot-rule>
+
+        <poly-bot-rule>
+          <span pattern>.+</span>
+
+          <span response>I'm not sure I understand you fully.</span>
+          <span response>Please go on.</span>
+          <span response>That is interesting. Please continue.</span>
+          <span response>Tell me more about that.</span>
+          <span response>Does talking about this bother you?</span>
+        </poly-bot-rule>
+      </poly-bot>
+    </template>
+
+    <script>
+      (function () {
+        var demo = document.getElementById('demo');
+
+        demo.chatlog = [];
+
+        demo._sendMessage = function () {
+          var message = this.input.trim();
+          if (!!message) {
+            this.input = '';
+            this.botInput = undefined;
+            this.unshift('chatlog', {author: 'You', text: message});
+            this.botInput = message;
+          }
+        };
+
+        demo._handleKeypress = function (e) {
+          if (e.which === 13) {
+            this._sendMessage();
+          }
+        };
+
+        demo._botMessage = function (e) {
+          if (e && e.detail) {
+            this.unshift('chatlog', {author: 'Eliza', text: e.detail});
+          }
+        };
+      }());
+    </script>
+  </body>
+</html>
